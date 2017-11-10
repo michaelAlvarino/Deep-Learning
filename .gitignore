@@ -5,4 +5,9 @@ pip-selfcheck.json
 .ropeproject
 .cache
 __pycache__/
+*.aux
+*.log
+*.out
+*.pdf
+*.synctex.gz
 

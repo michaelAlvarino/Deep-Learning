@@ -1,5 +1,6 @@
 % !TEX program = pdflatex
-\documentclass{article}
+\documentclass[preprint,10.5pt]{article}
+
 \usepackage{listings}
 \usepackage{tasks}
 \usepackage{graphicx}
@@ -9,51 +10,51 @@
 
 \usepackage[                                                                       
  paper  = letterpaper,                                                            
- left   = 1.5in,                                                                 
- right  = 1.5in,                                                                 
- top    = 1.0in,                                                                  
- bottom = 1.0in,                                                                  
+ left   = 1.0in,                                                                 
+ right  = 1.0in,                                                                 
+ top    = 0.5in,                                                                  
+ bottom = 0.5in,                                                                  
  ]{geometry}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=purple,
+}
 
 \begin{document}
 
 \title{Deep Learning $|$ Final Project Proposal}
 \author{Michael Alvarino (maa2282), Richard Dewey (rld2126), Colby Wise (cjw2165)}
-\date{\today}
 
 \maketitle
 
-\section{Project Review} We intend to build a best-in-class movie recommendation system that will build upon standard collaborative filtering techniques by incorporating additional contextual information and state-of-the-art neural network architectures. 
+\section{Project Overview} 
+\paragraph{One-liner} We intend to build a movie recommendation system that will jointly model users and movies by combining collaborative filtering techniques with deep learning via wide and deep convolutional neural network ($CNN$) and recurrent neural network ($RNN$) architectures.
 
-\paragraph{The Problem} The standard approach for movie recommendation systems has been to use a collaborative filtering approach. This approach relies on a matrix with users, items (movies) and ratings (as the elements of the matrix).  Matrix factorization is then used to recommend items (movies) to the user. These approaches suffer from sparsity which pushed recent research to use contextual data, such as reviews posted by users, in an attempt to improve the recommendation systems.
+\paragraph{The Problem} Prior to deep learning, standard approaches for recommendation systems ($RecSys$) used collaborative filtering ($CF$) which relies on decomposing users, items (i.e. movies), and ratings into latent feature matrices. Then the weights of these matrices are used to predict a rating a user would give for an item. These approaches suffer from sparsity which pushed recent research to use review data posted by users to reduce sparsity and improve prediction accuracy. Given accuracy improvements in text modeling from deep learning via CNN/RNN recent RecSys research has focused on combining CF with deep learning. Our project will reference such research to build a movie recommendation system utilizing the follow datasets. 
 
-\paragraph{Data} We intend to use three data sources each of which are open source and have been used in previous studies. Those sources are: movielens, netlfix and imdb. The datasets have overlap in movies and ratings, but each dataset also has distinctive features, which makes them part of a useful complimentary set. 
+\paragraph{Data} We intend to use one primary open source dataset, the Amazon Instant Video ($AIV$). In addition there are three open source datasets, $MovieLens$, $Netflix$, and $IMDB$ which have overlap in movies and ratings, but distinct features, making them part of a complimentary set. Should the possibility present itself we would also like to include the YouTube 8m dataset, specifically videos whose name or description includes the title of a film in question, which could provide additional data not captured by reviews and ratings like the color schemes and quality of editing of the film.
 
-\paragraph{Previous Work and References} The literature on recommendation systems is deep. We plan to focus on the following four papers which all offer new approaches using contextual data and novel approaches. 
+\paragraph{Previous Work and References} The literature on recommendation systems is deep. We plan to focus on the following five papers which all offer similar approaches to incorporating review data while jointly modeling users/items with CF and DL in RecSys.\\
+\ \newline
+\href{https://arxiv.org/pdf/1701.04783.pdf}{Joint Deep Modeling of Users and Items Using Reviews for Recommendation}\\
+\ \newline
+\href{https://arxiv.org/pdf/1703.04247.pdf}{DeepFM: A Factorization-Machine based Neural Network for CTR Prediction}\\
+\ \newline
+\href{https://cs224d.stanford.edu/reports/BalakrishnanDixit.pdf}{DeepPlaylist: Using Recurrent Neural Networks to
+Predict Song Similarity}\\
+\ \newline
+\href{https://www.tensorflow.org/tutorials/wide_and_deep}{TensorFlow Tutorial: Wide \& Deep Learning}\\
+\ \newline
+\href{http://dm.postech.ac.kr/~cartopy/ConvMF/}{Convolutional Matrix Factorization for Document Context-Aware Recommendation}
 
-\begin{itemize}
-\item Cooperative Deep Learning. 1 NN for rating/1NN for content.Combined using matrix factorization
-\subitem Zheng and Noroozi. "Joint Deep Modeling of Users and Items Using Reviews for Recommendation"
-\item Collaborative Deep Learning. DL for learning content. CF for ratings. Jointly modeled. 
-\subitem Wang and Wang. "Collaborative Deep Learning for Recommender Systems"
-\item CNN integrated with matrix factorization
-\subitem Kim, Donghyun. "Convolutional Matrix Factorization for Document Context-Aware Recommendation"
-\item Deep and Wide NNs. Generalization and Memorization
-\subitem Google Research paper
-\end{itemize}
+\paragraph{Sample Model} We intend to build a model to learn item properties and user behaviors jointly from review text using two parallel neural networks, coupled at a final layer. In addition we will append the result of this network to a wide network, similar to that of Google's Wide and Deep network, to improve the final predicted user ratings of movies.
+
+\paragraph{Evaluation Criteria} Standard practice in RecSys modeling is to evaluate new models against standard collaborative filtering techniques and against more recent deep learning models with similar parameters. To quantify results researchers use \href{https://en.wikipedia.org/wiki/Receiver_operating_characteristic}{Area Under the ROC Curve }, cross entropy loss, or Mean-Squared Error ($MSE$) on train/test data. They compare this across the models described above. Additionally, some papers will compare models with different parameter settings (optimizer, CNN layers, regularization). We will use one or more of these approaches combined with visualizations like weight gradient and accuracy plots, and provide sample test cases.  
 
 
-\paragraph{Evaluation Criteria} We plan to evaluate our model against the standard collaborative filtering techniques and against more recent approaches that incorporate additional data and novel techniques. Below is a list of our benchmarks. 
-
-\begin{itemize}
-\item Standard rating prediction model that only uses rating for collaborative filtering
-\subitem Salakhutdinov, Ruslan and Mnih, Andriy. "Probabilistic Matrix Factorization" 
-\item A state-of-the-art recommendation model that combines collaborative filtering (PMF) and topic modeling (LDA) to use both ratings and documents.
-\subitem Wang, Chong and Blei, David. "Collaborative Topic Modeling for Recommending Scientific Articles"
-\item A state-of-the-art recommendation model that combines collaborative filtering (PMF) and topic modeling (LDA) to use both ratings and documents.
-\item Convolutional Matrix Factorization - state of the art movie prediction system that integrates a CNN with PMF. 
-\subitem Kim, Donghyun. "Convolutional Matrix Factorization for Document Context-Aware Recommendation"
-\end{itemize}
 
 
 \end{document}
