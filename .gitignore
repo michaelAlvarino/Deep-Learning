@@ -9,4 +9,6 @@ __pycache__/
 *.log
 *.out
 *.synctex.gz
-
+.ipynb_checkpoints
+data
+venv
