@@ -5,7 +5,8 @@
 \usepackage{tasks}
 \usepackage{graphicx}
 \usepackage{hyperref}
-
+\usepackage{graphicx}
+\graphicspath{{images/}}
 \pagenumbering{gobble}
 
 \usepackage[                                                                       
@@ -30,31 +31,24 @@
 
 \maketitle
 
-\section{Project Overview} 
-\paragraph{One-liner} We intend to build a movie recommendation system that will jointly model users and movies by combining collaborative filtering techniques with deep learning via wide and deep convolutional neural network ($CNN$) and recurrent neural network ($RNN$) architectures.
+\section{Proposal}
+\paragraph{One-liner} We intend to build a network to predict user ratings of movies based on a user's other categorical data, ratings of the movie in question, and importantly, the text document of their review. Our model will be based on Google's \href{https://arxiv.org/pdf/1606.07792.pdf}{Wide and Deep Learning}, which was originally designed to handle sparse matrices of categorical data, but expand upon it to include text.
 
-\paragraph{The Problem} Prior to deep learning, standard approaches for recommendation systems ($RecSys$) used collaborative filtering ($CF$) which relies on decomposing users, items (i.e. movies), and ratings into latent feature matrices. Then the weights of these matrices are used to predict a rating a user would give for an item. These approaches suffer from sparsity which pushed recent research to use review data posted by users to reduce sparsity and improve prediction accuracy. Given accuracy improvements in text modeling from deep learning via CNN/RNN recent RecSys research has focused on combining CF with deep learning. Our project will reference such research to build a movie recommendation system utilizing the follow datasets. 
+\paragraph{The Problem} Prior to deep learning, standard approaches for recommendation systems ($RecSys$) used collaborative filtering which relies on decomposing users, items (i.e. movies), and ratings into latent feature matrices. Then the weights of these matrices are used to predict a rating a user would give for an item. However, collaborative filtering handles sparse data poorly. To alleviate the sparsity problem, Google created Wide and Deep networks. Unfortunately, Wide and Deep networks were built to handle simple, categorical features alone. Our model will expand upon Wide and Deep to include text data, specifically movie reviews, within the deep portion of the network.
+\par We will do this by stacking a recurrent neural network on top of the deep portion in order to generate an embedding for the reviews created by users (see diagram below). By including such rich data into our model, we expect to see better generalization and more accurate prediction of movie ratings. For a more detailed diagram of the model, see our diagrams section.
+\par Our first step will be to re-implement the Wide and Deep network using our dataset rather than the toy dataset used in the example online. By the November 23 milestone, we expect to have completed the standard Wide and Deep implementation, and be ready to implement the recurrent neural network portion of our model.
 
-\paragraph{Data} We intend to use one primary open source dataset, the Amazon Instant Video ($AIV$). In addition there are three open source datasets, $MovieLens$, $Netflix$, and $IMDB$ which have overlap in movies and ratings, but distinct features, making them part of a complimentary set. Should the possibility present itself we would also like to include the YouTube 8m dataset, specifically videos whose name or description includes the title of a film in question, which could provide additional data not captured by reviews and ratings like the color schemes and quality of editing of the film.
+\paragraph{Data} We intend to use one primary dataset, Amazon Instant Video ($AIV$). The complete dataset consists of 7,911,684 reviews of the following columns: productId, userId, profileName, helpfulness, score, time, summary, and text. If handling and training on such a large dataset becomes an issue, we intend to use either a random subset (of about 40,000 dat points) we generate ourselves, or one of those random subsets that already exists online.
 
-\paragraph{Previous Work and References} The literature on recommendation systems is deep. We plan to focus on the following five papers which all offer similar approaches to incorporating review data while jointly modeling users/items with CF and DL in RecSys.\\
-\ \newline
-\href{https://arxiv.org/pdf/1701.04783.pdf}{Joint Deep Modeling of Users and Items Using Reviews for Recommendation}\\
-\ \newline
-\href{https://arxiv.org/pdf/1703.04247.pdf}{DeepFM: A Factorization-Machine based Neural Network for CTR Prediction}\\
-\ \newline
-\href{https://cs224d.stanford.edu/reports/BalakrishnanDixit.pdf}{DeepPlaylist: Using Recurrent Neural Networks to
-Predict Song Similarity}\\
-\ \newline
-\href{https://www.tensorflow.org/tutorials/wide_and_deep}{TensorFlow Tutorial: Wide \& Deep Learning}\\
-\ \newline
-\href{http://dm.postech.ac.kr/~cartopy/ConvMF/}{Convolutional Matrix Factorization for Document Context-Aware Recommendation}
+\paragraph{Previous Work and References} The literature on recommendation systems is deep, but because we will be focusing on expanding the Wide and Deep approach, our primary reference will be the original \href{https://www.tensorflow.org/tutorials/wide_and_deep}{Wide and Deep} paper. For this particular paper there are multiple learning resources available online, from \href{https://www.tensorflow.org/tutorials/wide_and_deep}{tutorials}, to \href{https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/learn/wide_n_deep_tutorial.py}{source code}, to \href{https://www.youtube.com/watch?v=NV1tkZ9Lq48}{videos}.
+\par Our expansion on the method will create an embedding of a large document, similar to the encoder portion described in the \href{https://web.stanford.edu/class/cs224n/reports/2746634.pdf}{News Article Summarization} paper. For this paper the exact source code is not available, however there are many \href{https://github.com/hengluchang/deep-news-summarization}{open-source examples}.
 
-\paragraph{Sample Model} We intend to build a model to learn item properties and user behaviors jointly from review text using two parallel neural networks, coupled at a final layer. In addition we will append the result of this network to a wide network, similar to that of Google's Wide and Deep network, to improve the final predicted user ratings of movies.
+\paragraph{Evaluation Criteria} Since the output of our model will be a simple out-of-x rating for a movie, we intend to evaluate with standard point value error estimates, specifically cross entropy loss. Our true measure of success will be the comparison of our model (including text data embeddings) against a standard Wide and Deep model (using only categorical data). We expect to see improved generality and more accurate rating scores.
 
-\paragraph{Evaluation Criteria} Standard practice in RecSys modeling is to evaluate new models against standard collaborative filtering techniques and against more recent deep learning models with similar parameters. To quantify results researchers use \href{https://en.wikipedia.org/wiki/Receiver_operating_characteristic}{Area Under the ROC Curve }, cross entropy loss, or Mean-Squared Error ($MSE$) on train/test data. They compare this across the models described above. Additionally, some papers will compare models with different parameter settings (optimizer, CNN layers, regularization). We will use one or more of these approaches combined with visualizations like weight gradient and accuracy plots, and provide sample test cases.  
+\paragraph{Further Research} An important part of Google's Wide and Deep model is the efficiency of the network. By adding recurrent neural networks to process text data, we are significantly increasing the network complexity. It would be interesting to analyze that complexity and the time required for a single rating prediction to determine if our network is practical for a production environment.
 
-
-
+\section{Diagrams}
+\paragraph{Final Model Diagram} \ \newline
+\includegraphics[scale=0.38]{network_diagram}
 
 \end{document}
