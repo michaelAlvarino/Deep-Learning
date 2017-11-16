@@ -1,0 +1,5 @@
+Google Cloud Suggested Requirements: 1K80 Nvidia | 20GB CPU RAM | 75GB Disk Space
+
+GloVe Pre-trained Word Embeddings: wget http://nlp.stanford.edu/data/glove.42B.300d.zip to working directory
+
+aclIMDb Test/Train Data - open .tar file to workign directory
