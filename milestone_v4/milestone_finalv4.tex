@@ -60,7 +60,8 @@ Columbia University\\
    In this research paper we apply the methodology outlined in the
    arXiv working paper: "Joint Deep Modeling of Users and Items Using Reviews for Recommendation" 
    for rating prediction of movies. The approach used in this paper
-   models users and items jointly using review text in two cooperative neural networks.  
+   models users and items jointly using review text in two cooperative neural networks that 
+   the authors refer to as a Deep Cooperative Neural Network Model (DeepCoNN)  
    We have extended their model by implementing a different architecture and 
    objective function. We plan to further extend it by testing different hyperparameters
    and architectures.
@@ -110,15 +111,33 @@ From the above formulation we can clearly see the major disadvantage of this app
 The DeepCoNN model formulation that we'll focus on in this research uses two jointly modeled neural networks. The first network $Net_{i}$ uses all of the text reviews for a given user. The second network $Net_{p}$ uses all of the text reviews for a particular product (movie).
 
 
-\subsection{Data and Methodology}
+\subsection{Development}
 
-By modifying a code base found online \href{https://github.com/Praznat/uifud/tree/291b0882b02bf77edf9b310aeeb345784113b1f5}{Join and Deep} we were able to replicate one of the base-case scenarios for the DeepCoNN model. The original code base was incomplete and not well suited for our data, thus our reconfiguring of the DeepCoNN model presented a number of technical challenges. First, we used GloVe (50) to transform our reviews into a vector representation. GloVe returns a matrix representation for each word, so to get the data into the same form as that which is presented in the paper, we take the mean of each column in the GloVe word matrix. Thus for each review we have N words in the review and 50 columns for an N x 50 matrix.
+By modifying a code base found online \href{https://github.com/Praznat/uifud/tree/291b0882b02bf77edf9b310aeeb345784113b1f5}{Joint and Deep} we were able to replicate one of the base-case scenarios for the DeepCoNN model. The original code base was incomplete and not well suited for our data, thus our reconfiguring of the DeepCoNN model presented a number of technical challenges. 
 
-The second technical issue to work through is combining the two networks into a single loss function. This aspect is key to this model and others designed to combine the results of two (or more) neural networks and train them jointly with a common loss function. A number of approaches exist, but as a first step, we tested the baseline implementation of the model, by taking the dot product of the output from the fully connected layer of $Net_{i}$ and output from the fully connected of $Net_{p}$. This method is straightforward to implement, but suffers from the fact that doesn't capture higher level interactions between features. For our final project we plan to implement more robust methods for jointly modeling two neural networks, including using a factorization machine. The the CNN architecture described in the DeepCoNN paper was built using Keras and many of the Keras native methods. 
+The data was sourced from Julian McAuley's amazon data repository hosted by UCSD. The raw input is dictionary of 18563 samples of user ID numbers to movie ID numbers. We use one-hot encoding to convert these raw inputs. First, we used GloVe (50) to transform our reviews into a vector representation. GloVe returns a matrix representation for each word, so to get the data into the same form as that which is presented in the paper, we take the mean of each column in the GloVe word matrix. Thus for each review we have N words in the review and 50 columns for an N x 50 matrix.
+
+The second technical issue to work through is combining the two networks into a single loss function. This aspect is key to this model and others designed to combine the results of two (or more) neural networks and train them jointly with a common loss function. A number of approaches exist, but as a first step, we tested the baseline implementation of the model, by taking the dot product of the output from the fully connected layer of $Net_{i}$ and output from the fully connected of $Net_{p}$. This method is straightforward to implement, but suffers from the fact that doesn't capture higher level interactions between features.  The the CNN architecture described in the DeepCoNN paper was built using Keras and many of the Keras native methods. 
+
 
 \subsection{Architecture}
 
-The first layer of the network items (movies are represented as matrices of word embeddings as discussed above. The next layers are standard to CNN's including the convolution, max pooling and fully connected layers.  We use ReLU activations for each convolutional layer as is standard in the literature. The output of each network is joined by taking the dot product of $X_{u}$ and $Y_{i}$ the output vectors of the two neural networks. The approach explained in the paper introduces a shared layer, which allows us to map the two vectors into the same feature space. This is accomplished by concatenating the two vectors $X_{u}$ and $Y_{i}$ and then estimating a factorization machine on the resulting vector $Z$. As described in the paper, we optimize the model using RMSprop, which is an adaptive version of gradient descent that controls the step size with respect to the absolute value of the gradient. The current implementation does not use regularization, however we plan to implement regularization into our final project. 
+The first layer of the network items (movies are represented as matrices of word embeddings as discussed above. The next layers are standard to CNN's including the convolution, max pooling and fully connected layers.  We use ReLU activations for each convolutional layer as is standard in the literature. The output of each network is joined by taking the dot product of $X_{u}$ and $Y_{i}$ the output vectors of the two neural networks. As described in the paper, we optimize the model using RMSprop, which is an adaptive version of gradient descent that controls the step size with respect to the absolute value of the gradient. 
+
+We partition the data into training and test sets, using 90\% for the training data. The networks are trained us batch sizes of 32 in the the current implementation we do not use regularization. We use a standard mean squared error loss function to train our target value $\hat{Z}$ (the dot product of $X_{u}$ and $Y_{i}$ the output vectors). Our network architecture can be seen in the overview below and the exact specification are as follows: 
+
+\begin{itemize}
+\item Filters = 2 
+\item Strides = 6
+\item Kernal Size = 8
+\item Padding =
+\item Layers(nodes) =
+\end{itemize}
+ 
+
+%\section{Network Architecture}
+\paragraph{Network Architecture} \ \newline
+\includegraphics[scale=0.38]{DeepCoNN}
 
 \subsection{Preliminary Results}
 
@@ -126,11 +145,11 @@ Our preliminary work toward the milestone consisted of reconstructing aspects of
 
 \subsection{Further Research}
 
-For our final project we intended to test various methods for building a shared layer between in the two networks, including a factorization machine. We also intended to test other hyperparameter setting and potentially different architectures including an LSTM structure. Finally, as a robustness check, we intend to test our model on other datasets, including the amazon TV and video games datasets. Both of these datasets have similarly structured text reviews and should be amenable to the DeppCoNN predictive model. 
+For our final project we intended to test various methods for building a shared layer between in the two networks, including a factorization machine. The FM approach explained in the paper introduces a shared layer, which allows us to map the two vectors into the same feature space. This is accomplished by concatenating the two vectors $X_{u}$ and $Y_{i}$ and then estimating a factorization machine on the resulting vector $Z$. The FM method will capture higher levels interactions between the features.
 
-\section{Diagrams}
-\paragraph{Model Diagram} \ \newline
-\includegraphics[scale=0.38]{DeepCoNN}
+We also intended to test other hyperparameter setting and potentially different architectures including an LSTM structure. We also intend to introduce regularization. Finally, as a robustness check, we intend to test our model on other datasets, including the amazon TV and video games datasets. however we plan to implement regularization into our final project. Both of these datasets have similarly structured text reviews and should be amenable to the DeppCoNN predictive model. 
+
+
 
 
 %\FloatBarrier
