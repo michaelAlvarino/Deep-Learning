@@ -116,7 +116,9 @@ By modifying a code base found online \href{https://github.com/Praznat/uifud/tre
 
 The second technical issue to work through is combining the two networks into a single loss function. This aspect is key to this model and others designed to combine the results of two (or more) neural networks and train them jointly with a common loss function. A number of approaches exist, but as a first step, we tested the baseline implementation of the model, by taking the dot product of the output from the fully connected layer of $Net_{i}$ and output from the fully connected of $Net_{p}$. This method is straightforward to implement, but suffers from the fact that doesn't capture higher level interactions between features. For our final project we plan to implement more robust methods for jointly modeling two neural networks, including using a factorization machine. The the CNN architecture described in the DeepCoNN paper was built using Keras and many of the Keras native methods. 
 
+\subsection{Architecture}
 
+The first layer of the network items (movies are represented as matrices of word embeddings as discussed above. The next layers are standard to CNN's including the convolution, max pooling and fully connected layers.  We use ReLU activations for each convolutional layer as is standard in the literature. The output of each network is joined by taking the dot product of $X_{u}$ and $Y_{i}$ the output vectors of the two neural networks. The approach explained in the paper introduces a shared layer, which allows us to map the two vectors into the same feature space. This is accomplished by concatenating the two vectors $X_{u}$ and $Y_{i}$ and then estimating a factorization machine on the resulting vector $Z$. As described in the paper, we optimize the model using RMSprop, which is an adaptive version of gradient descent that controls the step size with respect to the absolute value of the gradient. The current implementation does not use regularization, however we plan to implement regularization into our final project. 
 
 \subsection{Preliminary Results}
 
@@ -138,14 +140,10 @@ For our final project we intended to test various methods for building a shared 
 \begin{tabular}{l|ccccccc}
 \hline
 %Category & Experiment Summary  \\ \hline
-Model & Data & Accuracy & Training Time & & & &  \\
+Model & Losses & Training Time & & & &  &\\
 \hline
-DeepCoNN-DP\footnote{DP is the dot product implementation} & AIV\footnote{Amazon Instant Video} & & & & & & \\
-DeepCoNN-DP X-layer & AIV & & & & & &\\
-DeepCoNN & AIV & & & & & &\\
-DeepCoNN X layer & AIV & & & & & &\\
-DeepCoNN & TV & & & & & &\\
-DeepCoNN & Video Games & & & & & &\\
+DeepCoNN-DP\footnote{DP is the dot product implementation} & & & & & & & \\
+Stand Alone FM & & & & & & &\\
 \hline
 \end{tabular}
 }
@@ -154,10 +152,41 @@ DeepCoNN & Video Games & & & & & &\\
 \caption{Model Summary}
 \end{exhibit}
 
+\subsection{References}
+
+[1] Zheng, Lei, Noroozi, Vahid and Yu, Philip. Joint Deep Modeling of Users
+ and Items Using Reviews for Recommendations. arXiv working paper. June 2017
+
+[2] Rendle, Steffan. Factorization Machines. ICDM 2010
+
+[3] Catherine, Rose and Cohen, William. TransNets: Learning to Transform
+for Recommendation. arXiv working paper. June 2017
+
+[4] D. Agarwal and B.-C. Chen. Regression-based latent
+factor models. In KDD, pages 19?28, 2009.
+
+[5] P. Baldi and P. J. Sadowski. Understanding dropout.
+In NIPS, pages 2814?2822, 2013.
+
+[6] Y. Bengio, L. Yao, G. Alain, and P. Vincent.
+Generalized denoising auto-encoders as generative
+models. In NIPS, pages 899?907, 2013.
+
+[7] C. M. Bishop. Pattern Recognition and Machine
+Learning. Springer-Verlag New York, Inc., Secaucus,
+NJ, USA, 2006.
 
 
 \end{document}
 
+
+
+AIV\footnote{Amazon Instant Video}
+DeepCoNN-DP X-layer & AIV & & & & & &\\
+DeepCoNN & AIV & & & & & &\\
+DeepCoNN X layer & AIV & & & & & &\\
+DeepCoNN & TV & & & & & &\\
+DeepCoNN & Video Games & & & & & &\\
 
 Please number all of your sections and displayed equations.  It is
 important for readers to be able to refer to any particular equation.  Just
