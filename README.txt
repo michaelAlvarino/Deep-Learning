@@ -4,7 +4,7 @@ Deep Learning Final Project Repo
 Colby Wise | Mike Alvarino | Richard Dewey @ Columbia.edu
 
 Project Overview:
-In this research paper we apply the methodology out-lined in the arXiv working paper: ”Joint Deep Modeling of Users and Items Using Reviews for Recommendation” for rating prediction of movies using the Amazon Instant Video 37k data set and GloVe.6B 50 dimensional word embeddings. The approach used in this paper models users and items jointly using review text in two cooperative neural networks.
+In this research paper we apply the methodology out-lined in the arXiv working paper: ”Joint Deep Modeling of Users and Items Using Reviews for Recommendation” for rating prediction of movies using the Amazon Instant Video data set and GloVe.6B 50 dimensional word embeddings. Of the data set there are only 18,000  text reviews. The approach used in this paper models users and items jointly using review text in two cooperative neural networks.
 
 Data Utilized:
 1. Amazon Instant Video 5-core via Julian McAuley @ UCSD. 
