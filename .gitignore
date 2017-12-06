@@ -13,3 +13,4 @@ __pycache__/
 data
 venv
 .DS_Store
+*tf_logs*
