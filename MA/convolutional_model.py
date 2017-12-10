@@ -129,11 +129,6 @@ def train(values,
           n_epochs,
           batch_size,
           embedding_size):
-    # user_pad_len = 600
-    # prod_pad_len = 600
-
-    # batch_size = 50
-    # n_epochs = 1
     n_iters = user_product.shape[0] // batch_size
     print("running for {} iterations".format(n_iters))
 
@@ -180,14 +175,28 @@ def train(values,
                 e_train_timer = get_timestamp()
                 batch_train_times.append(e_train_timer - s_train_timer)
 
-                if _ % 100 == 0 and _ > 0:
+                if _ % 250 == 0 and _ > 0:
                     avg_batch_collection_time = pd.Series(batch_collection_times)\
                         .mean()
                     avg_batch_train_time = pd.Series(batch_train_times).mean()
+                    train_loss = sess.run(loss, {y: y_inp,
+                                                u_input:
+                                                 user_reviews_for_other_movies,
+                                                i_input:
+                                                 prod_reviews_for_other_movies
+                                                })
+                    print("train loss {:.2f} for iter {}".format(train_loss, _))
+                    print("test loss xxx for iter {}".format(_))
                     print("spent an average of {} collecting batches".format(
                         avg_batch_collection_time))
-                    print("took {} to train for one batch".format(
-                        avg_batch_train_time))
+                    print("took {} to train {} iterations in {}th epoch"\
+                          .format(
+                              avg_batch_train_time,
+                              _,
+                              e
+                          ))
+                    print("took {} since start of epoch"\
+                          .format(get_timestamp() - start_epoch))
             end_epoch = get_timestamp()
             print("took {} to run for {} iterations".format(end_epoch - start_epoch,
                                                             n_iters))
@@ -222,11 +231,9 @@ def build_graph(batch_size, user_pad_len, prod_pad_len, embedding_size):
     with tf.name_scope("dense"):
         dense = tf.layers.dense(cat, 1, activation=tf.nn.relu)
 
-    print("adding results")
     with tf.name_scope("prediction"):
         prediction = dense + sum
 
-    print("adding optimizer")
     optimizer = tf.train.AdamOptimizer(learning_rate=0.001,
                                          beta1=0.9,
                                          beta2=0.999,
@@ -253,7 +260,7 @@ if __name__ == "__main__":
     EMBEDDING_SIZE = 50
     USER_PAD_LEN = 600
     PROD_PAD_LEN = 600
-    BATCH_SIZE = 5
+    BATCH_SIZE = 38
     user_product_map, user_reviews, product_reviews = prep_data(EMBEDDING_SIZE,
                                                                 USER_PAD_LEN,
                                                                 PROD_PAD_LEN)
