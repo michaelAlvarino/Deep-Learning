@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
-
 from os.path import join
 import pandas as pd
 import numpy as np
@@ -16,9 +10,17 @@ import pickle
 from sklearn.feature_extraction import DictVectorizer
 from keras.preprocessing.text import text_to_word_sequence
 
-
-# In[2]:
-
+from time import time
+from keras.models import Model
+from keras.layers import Input, Dense
+from keras.layers.merge import Dot
+from keras.callbacks import EarlyStopping, TensorBoard
+from keras import metrics
+from keras import backend as K
+from keras.models import Sequential
+from keras.layers import GRU
+from keras.layers.merge import Add, Dot, Concatenate
+from keras.preprocessing.sequence import pad_sequences
 
 # utils
 def initEmbeddingMap(fileName):
@@ -27,7 +29,7 @@ def initEmbeddingMap(fileName):
         return {l[0]: np.asarray(l[1:], dtype="float32") for l in [line.split() for line in glove]}
 
 def clean(text):
-    return text_to_word_sequence(text, filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n', 
+    return text_to_word_sequence(text, filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n',
                                  lower=True, split=" ")
 
 
@@ -51,7 +53,7 @@ def initRawData(input_file):
             rawOutputData.append(rawOutputDataObj)
     return rawInputData, rawOutputData
 
-# creates dict of usrs w/ all movies rated + movies w/ all user ratings *** 
+# creates dict of usrs w/ all movies rated + movies w/ all user ratings ***
 def group_data(inputData):
     users = {}
     items = {}
@@ -72,7 +74,7 @@ def matrix_2_avg(emb_matrix):
     return np.mean(emb_matrix, 0)
 
 
-# utils - one hot encodes all data 
+# utils - one hot encodes all data
 def initVecData(rawInputData, rawOutputData, embedding_map):
     print('initializing vectorized data')
     dictVect = DictVectorizer()
@@ -95,7 +97,7 @@ def initMatInputData(rawInputData, rawOutputData, embedding_map, save=False):
         item = rawInput['asin']
         users.setdefault(user, []).append(vecOutput)
         items.setdefault(item, []).append(vecOutput)
-        
+
     matUserInputData = []
     matItemInputData = []
     users = {k: np.vstack(v) for k, v in users.items()}
@@ -121,7 +123,7 @@ def initRatingsOutputData(rawInputData, input_file, save=False):
         userItem = toKey(rawInput['user'], rawInput['asin'])
         userItemDict[userItem] = i
         ratingsData.append(None) # check later to make sure no Nones left
-        
+
     with open(input_file,'r') as f:
         for i in f:
             line = f.readline()
@@ -137,86 +139,27 @@ def initRatingsOutputData(rawInputData, input_file, save=False):
             raise ValueError(str(len([r for r in ratingsData if r is None])) + " reviews did not have corresponding rating.")
     return ratingsData
 
-
-# In[3]:
-
-
 fileName = "data/reviews_Amazon_Instant_Video_5.json"
 rawInputData, rawOutputData = initRawData(input_file=fileName)
-rawOutputData[:10]
-
-
-# In[4]:
-
 
 users, movies = group_data(rawInputData)
-
-
-# In[5]:
-
 
 rand_idxs = np.random.permutation(len(rawOutputData))
 rawInputData = [rawInputData[i] for i in rand_idxs]
 rawOutputData = [rawOutputData[i] for i in rand_idxs]
 
-
-# In[6]:
-
-
 embedding_map = initEmbeddingMap("glove.6B.100d.txt")
-
-
-# In[ ]:
-
 
 all_users = getSetFromData('user', rawInputData)
 all_movies = getSetFromData('asin', rawInputData)
 vecInputData, vecOutputData = initVecData(rawInputData, rawOutputData, embedding_map)
-print(len(all_users))
-print(len(all_movies))
-print(vecInputData.shape)
-print(rawInputData[:10])
-
-
-# In[ ]:
-
 
 matUserInputData, matMovieInputData, extra_info = initMatInputData(rawInputData, rawOutputData, embedding_map)
 
-
-# In[ ]:
-
-
 matUserInputData[:10]
-
-
-# In[ ]:
-
 
 fileName = "data/reviews_Amazon_Instant_Video_5.json"
 ratingsData = initRatingsOutputData(rawInputData, input_file=fileName,save=False)
-
-
-# # DeepCoNN Recommendation Model
-
-# In[ ]:
-
-
-from time import time
-from keras.models import Model
-from keras.layers import Input, Dense
-from keras.layers.merge import Dot
-from keras.callbacks import EarlyStopping, TensorBoard
-from keras import metrics
-from keras import backend as K
-from keras.models import Sequential
-from keras.layers import GRU
-from keras.layers.merge import Add, Dot, Concatenate
-from keras.preprocessing.sequence import pad_sequences
-
-
-# In[ ]:
-
 
 class DeepCoNN():
     def __init__(self, embedding_size, hidden_size, rnn_hidden_size, u_seq_len, m_seq_len, filters=2, kernel_size=8,
@@ -233,7 +176,7 @@ class DeepCoNN():
 
     def create_deepconn_tower(self, max_seq_len):
         input_layer = Input(shape=(max_seq_len, self.embedding_size))
-        tower = GRU(self.rnn_hidden_size, activation="tanh")(input_layer)
+        tower = GRU(self.rnn_hidden_size, dropout=0.1, activation="tanh")(input_layer)
         tower = Dense(self.hidden_size, activation="relu")(tower)
         return input_layer, tower
 
@@ -242,11 +185,11 @@ class DeepCoNN():
         output = Add()([self.outNeuron, dotproduct])
         self.model = Model(inputs=[self.inputU, self.inputM], outputs=[output])
         self.model.compile(optimizer='Adam', loss='mse')
-        
+
     def train(self, matUserInputData, matItemInputData, ratingsData, u_seq_len=200, i_seq_len=200, epochs=3500, training=None):
         tensorboard = TensorBoard(log_dir="gru_100dim_tf_logs/{}".format(time()))
         self.create_deepconn_dp()
-        
+
         self.user_input = pad_sequences(np.asarray(matUserInputData), maxlen=u_seq_len)
         self.item_input = pad_sequences(np.asarray(matItemInputData), maxlen=i_seq_len)
 
@@ -262,14 +205,11 @@ class DeepCoNN():
 
         early_stopping = EarlyStopping(monitor='loss', patience=4)
         early_stopping_val = EarlyStopping(monitor='val_loss', patience=6)
-        
+
         batch_size = 32
-        
+
         self.history = self.model.fit(self.train_inputs, self.train_outputs, callbacks=[early_stopping, early_stopping_val, tensorboard], validation_split=0.2, batch_size=batch_size, epochs=epochs)
         self.predicts = self.model.predict(self.test_inputs)
-
-
-# In[ ]:
 
 
 # Calculates median user review length and item length. We then pad each review to these numbers
@@ -281,19 +221,8 @@ hidden_size = 64
 rnn_hidden_size = 64
 deepconn = DeepCoNN(embed_dims, hidden_size, rnn_hidden_size, u_seq_len, i_seq_len)
 
-deepconn.train(matUserInputData, matMovieInputData, ratingsData, 
+deepconn.train(matUserInputData, matMovieInputData, ratingsData,
            u_seq_len=u_seq_len, i_seq_len=i_seq_len,
            epochs=20, training=None)
 
-
-# In[ ]:
-
-
-# calc time
-
-
-# In[ ]:
-
-
-np.save("data/run_data/gru_50dEmb_50ptile.npy", deepconn.history.history)
-
+deepconn.model.save("model_gru_100emb.h5")
