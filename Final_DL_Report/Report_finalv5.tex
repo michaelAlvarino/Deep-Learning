@@ -144,21 +144,66 @@ To train two networks simultaneously using a single loss function, the paper com
 
 \subsection{Results}
 
-Our preliminary work consisted of reconstructing aspects of the code as highlighted above to model text review data.  We then built two new architectures, an LSTM network and a GRU network. We also experimented with dropout and l1 and l2 regularization. We also tested different word embeddings, examining the impact of trained vs untrained, length of reviews and for the trained version using GloVe various token sizes. Finally we built a factorization machine to capture higher order interactions. 
+Our preliminary work consisted of reconstructing aspects of the codebase for DeepCoNN to model text review data for movie rating prediction as discussed above. We then built two new architectures, an LSTM network and a GRU network. We also experimented with various forms of regularization, tested different word embeddings and hyperparameters.
 
-Specifically, on our review data set we obtained similar mean squared error ($MSE$) loss metrics as the paper's findings using the Amazon Music Instruments data set and with the \textit{dot product} interaction layer. Table 1 below provides specifics on the training/test data split and key data metrics. While Table 2 shows the training time and $MSE$ loss of our implementation of DeepCoNN.
+For a baseline comparison we used Amazon Music Instruments data set and obtained similar mean squared error ($MSE$) loss metrics as the paper's findings. The baseline used the \textit{dot product} interaction layer described in the paper. Table 1 below provides specifics on the training/test data split and key data metrics. While Table 2 shows the training time and $MSE$ loss of our implementation of DeepCoNN.
 
-Both the LSTM and GRU networks showed superior performance on the accuracy measure, but were much slower to train. See Exhibit X for training accuracies and train times of the various architectures. 
+Our first innovation beyond the described DeepCoNN model involved testing two new network architectures, an LSTM network and a GRU network. Both the LSTM and GRU networks showed superior performance on the accuracy measure, but were much slower to train. See Exhibit 3 for training accuracies and training times of the architectures in comparison with the DeepCoNN network.  In addition to these architectures, we experimented with different hyperparameters, but found the tuning only led to very marginal differences in our results and so we decided to the standard parameter setting outlined in exhibit 4. 
 
-Our first development phase of the project the \textit{shared layer} between the user network and the movie network was done by a dot product ($DP$) of the outputs of both networks. This method is straightforward to implement, but suffers from the fact that it does not capture higher order interactions between features. To this point, in addition to this $DP$ share layer the paper tests a factorization machine ($FM$) layer showing that \textit{DeepCoNN-FM} outperforms \textit{DeepCoNN-DP} empirically. However the authors provide no specifics on the implementation of this factorization machine. In the second phase we implemented a factorization machine as well and, like the authors, realized improved prediction accuracies. 
+After implementing our new architectures we sought improvement by testing the performance of GloVe 100 embeddings. This increases the token size from roughly 400,000 for GloVe 50 to roughly 1.5m tokens. Not surprisingly this increased token size led to improved performance as noted in the Exhibit 4 below. We also experimented with untrained embedding and the various review length limits for training. Neither of these two had a meaningful impact on our results.  
 
-More here on LSTM and GRU
+Finally we experimented with various forms of regularization. For the LSTM and GRU architectures we used a recurrent dropout (removing layers) and standard dropout of masking the activation of some nodes. For the DeepCoNN network we used l1 and l2 regularization as well as standard dropout, neither of which were explored by the authors. The results of our regularization are found in the Exhibit 5 below. Regularization improved most models by a marginal amount.  
 
-More here on word embeddings
 
 \section{Conclusion}
 
+The DeepCoNN model represents a step forward in recommendation systems and the typical collaborative and content-based filtering systems that were traditionally used. This was confirmed by our research into predicting movie rankings. Our research indicates that the DeepCoNN model can be incrementally improved by utilizing different word embedding structures and regularization. Moreover significant improvement to accuracy are available for a move into different architectures. The tradeoff with these new architectures is that they are significantly more complex and more time consuming to train. Practitioners may well continue to focus on collaborative filtering and the standard DeepCoNN model, but with improved compute power, these new architectures should gain acceptance and warrant further research.  
+
+\begin{exhibit}
+\begin{center}
+{\small
+\begin{tabular}{l|cccc}
+\hline
+%Category & Experiment Summary  \\ \hline
+ & Training Time (seconds) & MSE Loss \\
+\hline
+DeepCoNN-DP & 262 & 1.0954   \\
+LSTM & 2095 & .9835  \\
+GRU & 5273 & 1.0532  \\
+\hline
+\end{tabular}
+}
+\end{center}
+\caption{Results - Model Comparison}
+\end{exhibit}
+
+
+\begin{exhibit}
+\begin{center}
+{\small
+\begin{tabular}{l|cccccc}
+\hline
+%Category & Experiment Summary  \\ \hline
+ & Input Layers & Embedding Layers & Regularization & Dropout  \\
+\hline
+DC-DP & 64 & 50d and 100d & N/A & .1  \\
+LSTM & 64 \& 32 & 50d and 100d & Recurrent & .1 \\
+GRU & 64 \& 32 & 50d and 100d  & Recurrent & .1 \\
+\hline
+\end{tabular}
+}
+\end{center}
+\caption{Architecture Overview}
+\end{exhibit}
+
+
+
+
+
+
 The DeepCoNN model shows superior performance over standard collaborative filtering techniques and the Wide and Deep model proposed by Google researchers. Our research into other architectures and regularization methods show that further improvements to DeepCoNN are available.   
+
+\includegraphics[scale=0.38]{Loss_Graph.png}
 
 
 \begin{exhibit}
@@ -229,6 +274,10 @@ Predict Song Similarity. semanticscholars.org
 
 
 \end{document}
+
+
+Our first development phase of the project the \textit{shared layer} between the user network and the movie network was done by a dot product ($DP$) of the outputs of both networks. This method is straightforward to implement, but suffers from the fact that it does not capture higher order interactions between features. To this point, in addition to this $DP$ share layer the paper tests a factorization machine ($FM$) layer showing that \textit{DeepCoNN-FM} outperforms \textit{DeepCoNN-DP} empirically. However the authors provide no specifics on the implementation of this factorization machine. In the second phase we implemented a factorization machine as well and, like the authors, realized improved prediction accuracies. 
+
 
 %For our final project we will try to implement a factorization machine by utilizing some of the additional resource papers mentioned.
 
