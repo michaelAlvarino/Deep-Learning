@@ -79,18 +79,18 @@ Columbia University\\
 
 \par The literature on recommendation systems is deep and until recently has traditionally focused on well-known matrix factorization algorithms, such as collaborative filtering ($CF$), as popularized by Netflix and Spotify. Collaborative filtering is advantageous to other methods because it is relatively easy to implement and computationally efficient. On the other hand, the drawbacks of collaborative filtering in real-world applications lead to at times insurmountable challenges. To clarify, CF suffers from the "cold-start" problem in that it requires user ratings to make predictions. When users have no or limited prior ratings history relative to the total amount of items to rate this is called data \textit{sparsity}. For sparse user data it's difficult to accurately predict ratings/recommendations thus leading to poor model performance and generalization [9]. 
 
-\par Recent breakthroughs in Deep Learning particularly in natural language modeling via convolutional neural networks ($CNN$) and recurrent networks ($RNN$) to capture complex feature interactions in textual data have lead recent recommendation systems ($RecSys$) research to begin to incorporate deep learning. CNN models [1] and RNNs [3] have shown the ability to help with the generalization problem and improve model accuracy in sparse data sets.
+\par Recently strong empirical results in Deep Learning particularly in natural language modeling via convolutional neural networks ($CNN$) and recurrent networks ($RNN$) to capture complex feature interactions in textual data have lead recent recommendation systems ($RecSys$) research leverage incorporate deep learning. CNN models [1] and RNNs [3], such as \textit{Long Short-Term Memory} (LSTM) and \textit{Gated Recurrent Units} (GRU) have shown the ability to help with the generalization problem and improve model accuracy in textual data sets.
 
 \subsection{Related Work}
 Our experiments focus on expanding the $DeepCoNN$ model thus our primary reference will be the original \textit{Joint Deep Modeling of Users and Items Using Reviews for Recommendation} paper. While the authors do not provide an open-source code repository on-line, after reaching out them via email they provided guidance on model replication. Additionally, we found a similar code base on-line that utilized video game review data [8]. Related papers we referenced for re-constructing $DeepCoNN$ are $DeepFM$ [4] which similar to our model, combines a form of matrix factorization to capture user/item interactions with a CNN architecture; $TransNets$ [3], which extends $DeepCoNN$ to examples where the users review is not available; and for background on factorization machines [2]. 
 
-Our reading of other papers that jointly train multiple neural networks such as Cooperative Neural Net Ensembles [9] and collaborative RNN's for Recommendation Systems [A] also informed our research. In particular we drew inspiration from papers that used more advanced network architectures such as  A Recurrent Neural Network Based Recommendation System [B]. This led us to extend the DeepCoNN network by testing LSTM and GRU architectures, which both provided better out of sample performance. The seminal work by Hochreiter and Schmidhuber [C] was also a helpful guide. Finally, research on word embeddings in NLP such as A Comparative Study of Word Embeddings for Reading Comprehension [D] was informative to our research process. 
+Our reading of other papers that jointly train multiple neural networks such as \textit{Cooperative Neural Net Ensembles} [9] and \textit{Collaborative Recurrent Neural Networks for Dynamic Recommender Systems} [10] also informed our research. In particular we drew inspiration from papers that used more advanced network architectures such as  \textit{A Recurrent Neural Network Based Recommendation System} [11] which for instance use LSTM and GRU architectures to predict user preferences on $Yelp$ and $Trip$-$Advisor$ from text reviews. This led us to extend the DeepCoNN network by testing RNN architectures such as (LSTM $|$ GRU), which both provided better out of sample performance. Finally, research on word embeddings in NLP such as \textit{A Comparative Study of Word Embeddings for Reading Comprehension} [12] helped inform our use of pre-trained word embeddings. 
 
-It should be noted that our original proposal was to replicate Google's \textit{Wide \& Deep} model [5]. We spent a considerable amount of time going down this path, but ultimately came to the conclusion that we could not source the high quality categorical data needed for training the wide part of the model. We decided to switch to the $DeepConn$ model due to it's greater relevancy to our data set despite the model being arguably more complex. 
+It should be noted that our original proposal was to replicate Google's \textit{Wide \& Deep} model [5]. We spent a considerable amount of time going down this path, but ultimately came to the conclusion that we could not source similar high quality categorical data as per the original paper. Furthermore, we decided to switch to the $DeepConn$ model due to it's greater relevancy to our data set and given the success of the paper which was recently accepted into the 2017 ACM International Conference on Web Search and Data Mining ($WSDM$). Lastly, we found the paper to be more innovative and challenging.
 
 %-------------------------------------------------------------------------
 \section{Methodology}
-This section outlines the methodology used in the project including an overview of the problem formulation, data set structure and processing, and details of model architecture.
+This section outlines the methodology used in the project including an overview of the problem formulation, an overview of our data set and preprocessing, and details of model architectures.
 
 \subsection{Problem Formulation}
 
@@ -110,44 +110,109 @@ This yields a movie-to-movie similarity matrix of dimensions $M \times M$ with o
 
 From the above formulation we can clearly see the major disadvantage of this approach: $sparsity$. When ratings are limited the movie-to-movie matrix is mainly zeros thus limiting predictive ability. Current research like $DeepCoNN$ have attempted to improve accuracy of sparse data by using text data that users write after watching movies. This text data is used as input for training neural networks and offers additional insights versus only numerical ratings.
 
-The DeepCoNN model formulation that we'll focus on in this research uses two jointly modeled neural networks. The first network $Net_{i}$ uses all of the text reviews for a given user. The second network $Net_{p}$ uses all of the text reviews for a particular item (movie).
-
-\subsection{Data Structure \& Processing}
-The Amazon Instant Video Review 5-core data is a JSON file with nine values per entry of which we use:\\
+\subsection{Data Overview \& Preprocessing}
+The Amazon Instant Video Review 5-core data is a JSON file with nine values per entry of which we use the following four:\\
 \ \newline
- \hspace*{10mm}  \textbf{reviewerID} - user ID \\ 
- \hspace*{10mm}  \textbf{asin} - movie ID \\
- \hspace*{10mm}  \textbf{reviewText} - review text \\
- \hspace*{10mm}  \textbf{overall} - movie rating \\
+ \hspace*{10mm}  \textbf{ReviewerID} - \textit{user ID} \\ 
+ \hspace*{10mm}  \textbf{Asin} - \textit{movie ID} \\
+ \hspace*{10mm}  \textbf{ReviewText} - \textit{review text} \\
+ \hspace*{10mm}  \textbf{Overall} - \textit{movie rating} 
 
-Word embeddings map words our review text to $n$-dimensional numerical vectors. The paper does not explicitly state a standard word embedding method i.e. (GloVe, Word2Vec, etc) thus we decided to use Global Vectors for Word Representation (GloVe.6B) 50-dimensional pre-trained embeddings [10]. The purpose of this is to capture text structure from the review data. With this in hand, we group reviews by user and by movie into two dictionaries such that each key in the dictionary is a unique reviewerID accompanied by a list of their text reviews. Using Keras each review is tokenized into separate lowercased words with all punctuation removed. Then we use our embedding mapper to transform all reviews into their embedding representation. We carry out the same procedure for movie review except this time grouping movies with all their respective reviews. Finally given review lengths typically differ, prior aggregating all user reviews and movie reviews into input matrices we pad (truncate) shorter (longer) reviews such that input matrices are equal in dimensions. 
+\subsubsection{Grouping Users \& Reviews}
+The DeepCoNN model formulation that we'll focus on in this research uses two jointly modeled neural networks. The first network $Net_{i}$ uses all of the text reviews for a given user. The second network $Net_{p}$ uses all of the text reviews for a particular item (movie). To replicate the paper, we group users with all their reviews and movies with their reviews into two dictionaries such that each key in the dictionary is a unique $reviewerID$ ($Asin$) accompanied by a list of text reviews. 
 
-\subsection{Architecture}
-The architecture of DeepCoNN is depicted below and taken from the original research paper [1]. The model has two parallel neural networks joined in the last layer. One network for
-users and one network for movies.\\
+\subsubsection{Data Preprocessing}
+\begin{exhibit}
+\begin{center}
+{\small
+\begin{tabular}{l|ccccccc}
+\hline
+%Category & Experiment Summary  \\ \hline
+ & \# Reviews & \# Users & \# Movies & Training\% & Test\% \\
+\hline
+Data & 18,563  & 5033 & 1685 & 90\% & 10\%  \\
+\hline
+\end{tabular}
+}
+\end{center}
+\caption{Amazon Instant Video Dataset Overview}
+\end{exhibit}
+
+Using Keras built-in preprocessing API each review is tokenized into separate lowercased words with all punctuation removed. Then we use our embedding mapper to transform all reviews into their GloVe vector representation. Given review lengths typically differ in the number of words per review, prior to aggregating all user reviews and movie reviews into input matrices we pad ($truncate$) reviews such that input matrices are of equal dimensionality. It's important to note that our original data set includes 37,000 ratings however of these there are only 18,563 text reviews. Given we are training our model on text reviews, we limit our data set to only ratings that have reviews thus truncating our data set down to 18,563 from 37,000. The 18,633 unique reviews are comprised from 5033 unique users and 1685. Hence on average there are 3.70 reviews/user and 11 reviews/movie. Lastly we split this data set into a randomized training and test using a 90\%, 10\% split. \textit{Exhibit 1} summarizes this.
+ 
+\subsubsection{Pre-trained Embeddings}
+
+Word embeddings map words in our review text to $n$-dimensional numerical vectors. The paper does not explicitly state a standard word embedding method i.e. (GloVe, Word2Vec, etc) thus we decided to use Global Vectors for Word Representation (GloVe.6B) 50-dimensional and 100-dimensional pre-trained embeddings [10]. GloVe is a log-bilinear model with a weighted least-squares objective. Intuitively, the model observes that ratios of word-word co-occurrence probabilities have the potential for encoding some form of meaning. Thus GloVe embeddings help capturing text structure from our review data. The advantage of using pre-trained embeddings vs learning the embeddings from the data is that one can shorten model training times while potentially increasing the quality word-vector representations in the model. The disadvantage is that our text corpus may significantly differ from the corpus used to train GloVe. 
+
+\subsection{Model Architectures}
+CNNs and RNNs are amongst the top performing techniques across a range of NLP tasks such as sentiment classification, question-answering, etc. Given there success for text-based modeling we focused on trying to improve the DeepCoNN-DP model using these models. In the subsections below we outline each type of model used on our experiments. Prior to that, we provide a detailed overview of the original $DeepCoNN$ model presented in the paper. 
+
+The baseline architecture of $DeepCoNN$ is depicted below and taken from the original research paper. As previously stated, $DeepCoNN$ utilizes  two parallel neural networks trained in tandem. One network learns latent factors representations for users from reviews and the other learns factors for movies. \\
 \ \newline
 \includegraphics[scale=0.38]{DeepCoNN}
 
-Note that in the original paper the first layer of the network is a "lookup" layer that transforms review text into embeddings. As discussed above, we create embedding prior to feeding into the network thus we omit a explicit "lookup" layer. Since the embedding layer uses pre-trained embedding and this is non-trainable our method is similar. The next layers are standard to CNN layers, however the exact number of convolutional layers is missing from the paper. For our preliminary implementation we used (per network): \\
+Note that in the original paper the first layer of the network is a "lookup" layer that transforms review text into embeddings. As discussed above, we create embedding prior to feeding into the network thus we omit a explicit "lookup" layer. Since the embedding layer uses pre-trained embedding and this is non-trainable our method is similar. The table on the following page summarizes our baseline DeepCoNN-DP model.  \\
 
-\begin{enumerate}
-\item CNN Layers: 1 \\
-    \hspace*{5mm} Filters: 2 \\
-    \hspace*{5mm} Kernel Size: 8 \\
-    \hspace*{5mm} Strides: 6 \\
-    \hspace*{5mm} Activation: ReLU 
-\item Max Pooling Layers: 1
-\item Flattened Layers: 1
-\item Fully-Connected Layers: 1
-\end{enumerate}
+%\begin{enumerate}
+%\item CNN Layers: 1 \\
+%    \hspace*{5mm} Filters: 2 \\
+%    \hspace*{5mm} Kernel Size: 8 \\
+%    \hspace*{5mm} Strides: 6 \\
+%    \hspace*{5mm} Activation: ReLU 
+%\item Max Pooling Layers: 1
+%\item Flattened Layers: 1
+%\item Fully-Connected Layers: 1
+%\end{enumerate}
 
-To train two networks simultaneously using a single loss function, the paper combines the outputs of both networks by concatenation. From here the interaction of user review features with movie review features is done via a \textit{factorization machine} of which the details are not provided. After contacting the authors, we were told that taking the dot product of the output from the fully connected layers of $Net_{u}$ and $Net_{i}$ should closely resemble the factorization machine approach. The loss function for the dot product approach can be defined as follows:
+
+\begin{figure}[!ht]
+\begin{center}
+{
+\begin{tabular}{ |p{3cm}|p{1cm}| }
+ \hline
+ \multicolumn{2}{|c|}{\textbf{Baseline DeepCoNN-DP Model}} \\
+ \hline
+ \textbf{CNN Layer} & 1  \\
+ $Hidden Size$ & 64 \\
+ $Filters$   & 2    \\
+ $Kernel Size$ &   8\\
+ $Strides$ & 6 \\
+ $Activation$    & ReLU \\
+ \hline
+ \textbf{Max Pooling} &   1  \\
+   \hline
+ \textbf{Flattened} & 1    \\
+  \hline
+ \textbf{Fully-Connected} & 1  \\
+  $Hidden Size$ & 32 \\
+
+ \hline
+\end{tabular}
+}
+\end{center}
+\caption{DeepCoNN Baseline Architecture}
+\end{figure}
+
+
+To train two networks simultaneously using a single loss function, the paper combines the outputs of both networks by concatenation. From here the interaction of user review features with movie review features is done via a \textit{factorization machine} (FM) of which the details are not provided. However, the goal of the FM is to capture second-oder interactions between users and movies. The $DeepCoNN$ loss function including FM:
 
 $$
-\mbox{DeepCoNN-DP} = \hat{\beta_{0}} + \sum_{i=1}^{\hat{z}}\hat{w_{i}}\hat{z_{i}} + x^{T}_{u}x_{i}
+\textbf{DeepCoNN-FM} = \hat{\beta_{0}} + \sum_{i=1}^{\hat{|z|}}\hat{w_{i}}\hat{z_{i}} + \sum_{i=1}^{\hat{|z|}} 
+\sum_{j=i+1}^{\hat{|z|}} \langle \hat{v_i}, \hat{v_j} \rangle \hat{z_i}\hat{z_j}
+$$
+\textbf{Where:}\\
+$\hat{\beta_0}$ is the global bias\\
+$\hat{w_i}$ models strength of $i^{th}$ variable in $\hat{z}$\\
+$\langle\hat{v_i}, \hat{v_j} \rangle$ is the $2^{nd}$ order interaction\\
+
+
+After contacting the authors, we were told that taking the dot product of the output from the fully connected layers of $Net_{u}$ and $Net_{i}$ should closely resemble the factorization machine approach and results focusing on first-order interactions. These results are further discussed in the conclusions and results section. The loss function for the dot product approach is defined as follows:
+
+$$
+\textbf{DeepCoNN-DP} = \hat{\beta_{0}} + \sum_{i=1}^{\hat{|z|}}\hat{w_{i}}\hat{z_{i}} + x^{T}_{u}x_{i}
 $$
 
-Optimization is done via $Adam$, which is an adaptive version of gradient descent that controls the step size with respect to the absolute value of the gradient. The paper did not use regularization.
+Optimization in the paper is done via $RMSprop$ which we replicated. However in further experiments we switched to $Adam$ after finding it led to similar results. Hence we decided to use it in all experimental architectures to ensure consistency between models. $Adam$ is an adaptive version of gradient descent that controls the step size with respect to the absolute value of the gradient. Lastly, note that the paper did not mention of the use of regularization.
 
 \begin{figure}[!ht]
 \begin{center}
@@ -155,41 +220,79 @@ Optimization is done via $Adam$, which is an adaptive version of gradient descen
 \begin{tabular}{l|cccccc}
 \hline
 %Category & Experiment Summary  \\ \hline
-Hyperparameter & DC-DP & LSTM & GRU  \\
+					 & \textbf{CNN} & \textbf{LSTM} & \textbf{GRU}  \\
 \hline
-Hidden Units & 64 & 64 & 64 \\
-Hidden Layers & 1 & 1 & 1 \\
-Activation Hidden & relu & tanh &  tanh \\
-Dense Layers & 1 & 1 & 1 \\
-Activation Dense & relu & relu &  relu \\
-Input Drop \% & 0.1 & 0.1 & 0.1 & \\
-Recurrent Drop \% & N/A & 0.2 & 0.2 & \\
-Embedding Layers & 50d \& 100d & 50d \& 100d & 50d \& 100d \\
-Optimizer & Adam & Adam &  Adam \\
+\textbf{GloVe Embedding} & 50 $|$ 100 & 50 $|$ 100 & 50 $|$ 100 \\
+\hline
+\textbf{Hidden Layer} & 1 & 1 & 1 \\
+$Units$ & 64 & 64 & 64 \\
+$Activation$ & ReLU & Tanh &  Tanh \\
+$Dropout$ \% & 0.10 & 0.10 & 0.10 & \\
+\textit{Recurrent Drop.} \% & \-- & 0.20 & 0.20 & \\
+\hline
+\textbf{Dense Layer} & 1 & 1 & 1 \\
+$Units$ & 64 & 64 &  64 \\
+$Activation$ & ReLU & ReLU &  ReLU \\
+\hline
+\textbf{Optimizer} & Adam & Adam &  Adam \\
 \hline
 
 \end{tabular}
 }
 \end{center}
-\caption{Architecture Overview}
+\caption{DeepCoNN Architecture Comparisons}
 \end{figure}
+
+\subsubsection{CNN Architecture}
+CNNs are very popular within the image processing field and its applications.
+For text applications, similar to image processing, CNNs make use of temporal convolution operators known as filters. In practice, filters are applied at multiple resolutions and coupled with non-linear activation functions
+and pooling techniques such as max pooling. The convolution operation is a linear mapping over “n-gram vectors” which helps learn word representations. See Figure 1 for a depiction of the architecture used in the original paper.
+
+In our initial model experiments we decided to innovative upon the DeepCoNN model by adding regularization via dropout, and expand the number of nuerons in the hidden (CNN) and dense layers. Additionally, for consistency when experimenting between models we utilized Adam as our optimizer. Our implementation of this is detailed in Figure 2 above.
+
+
+\subsubsection{LSTM Architecture}
+Long Short-Term Memory (LSTM) cells retain and control information flow outside the normal flow of a simply recurrent network (RNN) via the use of gated cells. Symbolically, information can be stored, written, or read from a cell, similar to how data is manipulated in a computer’s memory. LSTM cells"decide" what is stored, written, or read by opening and closing gates. In practice these actions are implemented with element-wise multiplication by sigmoids which range from zero to one. A graphical overview of an LSTM cell is depicted below in Figure 3 [14]. A summary of our implementation can be found in Figure 2 above.
+
+Thus gates can block or pass on information based on its strength, which they control through their own sets of weights. LSTMs are well-known variants of traditional RNNs and were introduced by Hochreiter and Schmidhuber in 1997. Furthermore, they are popular with the natural language processing given their above abilities, addition to, their ability to counteract the vanishing-gradient problem; and because standard stochastic gradient descent-based learning techniques can be used given their differentiability. The downside of LSTMs is the magnitude of parameterizations increases leading to longer training times, which we discuss in the results section. As discussed above, in all of our experiments we implemented regularization via recurrent dropout and/or regular dropout. We also expanded the number of hidden units and changed the optimizer.  
+
+\begin{figure}[!ht]
+\includegraphics[scale=0.38]{LSTM.png}
+\caption{LSTM Gated Cell}
+\end{figure}
+
+\subsubsection{GRU Architecture}
+We also explored Gated Recurrent Units (GRU) which were introduced in 2014 by Cho et al. [15]. GRUs simplify the LSTM architecture by combing the forget and input gates into an update gate and merging the cell state with the
+hidden state. Thus GRU have fewer gates than LSTMs and eliminate the separate memory component. As you would expect, leads to fewer parameterizations. Figure 4 shows the mathematics of GRU gates [16]. A summary of our implementation can be found in Figure 2 above.
+
+\begin{figure}[!ht]
+\includegraphics[scale=0.40]{GRU.png}
+\caption{GRU Mathematical Overview}
+\end{figure}
+
+\subsection{Implementation Details}
+
+To implement the DeepCoNN-DP model we used $Python$. Modeling construction was done via $Keras$ version 2.1.2 with a $TensorFlow$ version 1.4.0 back end. Data preprocessing was done mainly via $pandas$, $numpy$, \textit{Keras preprocessing API}, and $sklearn$. Please see the project \href{https://github.com/michaelAlvarino/Deep-Learning}{GitHub} repository for specific code implementation details. For training we used one Tesla K80 GPU on Google Cloud.
 
 \subsection{Results}
 
-Our preliminary work consisted of reconstructing aspects of the codebase for DeepCoNN to model text review data for movie rating prediction as discussed above. We then built two new architectures, an LSTM network and a GRU network. We also experimented with various forms of regularization, tested different word embeddings and hyperparameters.
+Our preliminary work consisted of implementing DeepCoNN to model text review data for movie rating prediction. We then tried to innovate upon the DeepCoNN framework by experimenting with two new architectures in the $LSTM$ DeepCoNN-DP model and $GRU$ DeepCoNN-DP models as outlined above. Additionally, experimentation was done with the original CNN underlying architecture through regularization, hidden layer dimensionality, and optimizers. Equally important, we experimented with different GloVe word embeddings. Below we present and summarize those results.
 
-For a baseline comparison we used Amazon Music Instruments data set and obtained similar mean squared error ($MSE$) loss metrics as the paper's findings. The baseline used the \textit{dot product} interaction layer described in the paper. Table 1 below provides specifics on the training/test data split and key data metrics. While Table 2 shows the training time and $MSE$ loss of our implementation of DeepCoNN. The Mean Squared Error can be defined as follows:
+We used our recreation of DeepCoNN-DP as the baseline model when comparing experiments. Mean Squared Error was used when comparing models. Exhibit 1 shows our training/testing split as part of the data preprocessing step.
 $$
 \mbox{MSE} = \frac{1}{N}\sum_{n=1}^{N}(r_{n} - \hat{r}_{n})^2
 $$
 
-Our first innovation beyond the described DeepCoNN model involved testing two new network architectures, an LSTM network and a GRU network. Both the LSTM and GRU networks showed superior performance on the accuracy measure, but were much slower to train. See Exhibit 3 for training accuracies and training times of the architectures in comparison with the DeepCoNN network.  In addition to these architectures, we experimented with different hyperparameters, but found the tuning only led to very marginal differences in our results and so we decided to the standard parameter setting outlined in exhibit 4. 
+In the original paper the Amazon Music Instant Review data set was used. We have included a table in Figure 5 showing the original results of the authors from that experiment for convenience. Note that they achieved an MSE of 1.253 on the Amazon Music data set for the \textit{DeepCoNN-DP} model and a MSE of 1.233 on the \textit{DeepCoNN-FM} model. 
 
-After implementing our new architectures we sought improvement by testing the performance of GloVe 100 embeddings. This increases the token size from roughly 400,000 for GloVe 50 to roughly 1.5m tokens. Not surprisingly this increased token size led to improved performance as noted in the Exhibit 4 below. We also experimented with untrained embedding and the various review length limits for training. Neither of these two had a meaningful impact on our results.  
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[scale=0.50]{orig_mses.png}
+\caption{JDM MSE Results - Amazon Music Instruments}
+\end{center}
+\end{figure}
 
-\includegraphics[scale=0.38]{Loss_Graph.png}
-
-Finally we experimented with various forms of regularization. For the LSTM and GRU architectures we used a recurrent dropout (removing layers) and standard dropout of masking the activation of some nodes. For the DeepCoNN network we used l1 and l2 regularization as well as standard dropout, neither of which were explored by the authors. The results of our regularization are found in the Exhibit 5 below. Regularization improved most models by a marginal amount.  
+From our experiments using the Amazon Movie Review data set we show that all experiments lead to similar MSE results as per the paper's findings. Interestingly, our results from all architectures using a simple dot product interaction (DeepCoNN-DP) instead of the papers best model of (DeepCoNN-FM) show similar or better MSE results than the original paper. While we should emphasize the difference in data sets, our findings suggest that further analysis and testing may be needed to prove the advantage of \textit{DeepCoNN-DP} over \textit{DeepCoNN-FM}. Case in point in the authors' original results presented in Figure 5 on the $Beer$ data set, the different in MSE for DC-DP and DC-FM is only 0.005.
 
 %\FloatBarrier
 \begin{figure}[!h]
@@ -214,6 +317,25 @@ GRU & 100d & 5273 & 1.0532  \\
 \caption{Results - Model Comparison}
 \end{figure}
 
+\subsubsection{Architecture Experiments}
+Our first innovation beyond the described DeepCoNN model involved testing two new network architectures, an LSTM network and a GRU network. Both the LSTM and GRU networks showed significant improvements in MSE vs our baseline DC-DP implementation. The best model results were from GRU with an MSE of 0.93 on the 100d GloVe Embeddings. As expected LSTMs were close seconds in performance vs GRUs followed last by the CNN architectures. A summary of results per architecture and embedding is presented in Figure 6.
+
+The downside of the RNN architectures particularly the LSTM was that training times were significantly slower than both GRU and cNN. In Figure 6 we can see that training the LSTM took \textbf{twice} as long as the GRU and almost \textbf{ten} times as long as the CNN on one Tesla K80 GPU. Thus significant compute resources and time must be allocated to train these RNN networks relative to the CNN baseline. Consequently, this may limit their real-world application for companies with prohibitive resource or latency constraints. 
+Lastly, we performed naive experimentation with different hyperparameters such as optimizer learning rates and dropout \%, but found that tuning only led to marginal differences and a more robust hyperparameter search was needed if given more time.
+
+\subsubsection{Embedding Experiments}
+As discussed above using GloVe embeddings has several advantages and disadvantages however we felt the advantages were greater. Intuitively, using pre-trained embeddings could help with the cold start problem that occurs in textual models when initially trying to learn a vocab from a new corpus. After implementing our new architectures we further innovated by testing the performance of different GloVe embeddings, namely 50d vs 100d. GloVe 100d increases the token size from roughly 400,000 unique tokens to roughly 1.5 million tokens. Our goal was to see how this increase effected the generalization of our model. 
+
+Results show that the increased token size led to improved performance as noted in Figure 6. Particularly, on our best model (GRU DeepCoNN-DP) we saw a 0.07 decrease in MSE from 50d to 100d. Comparing across models we saw decreases in each architecture when increasing GloVe from 50d to 100d.\\
+
+\subsubsection{Regularization}
+
+\includegraphics[scale=0.38]{Loss_Graph.png}
+
+We experimented with dropout regularization in all architectures, plus recurrent dropout in the RNN architectures. While the original paper did not use regularization in the baseline CNN architecture, LSTMs/GRUs has a tendacy to easily over-fit and regularization is typically prudent. Below we show loss curves for all of our architectures using the 100d GloVe embeddings. For the LSTM and GRU architectures we used a recurrent dropout (removing layers) and standard dropout of masking the activation of some nodes. From the graphs we can see that even with regularization both the LSTM network and GRU network begin to over-fit half way through training. From our experiments we found that modest regularization helped smooth the loss curve and decrease over-fitting. For the CNN architecture, we found over-fitting to be less apparent which may be why the authors in the original paper omitted specifics on regularization. Regularization is summarized in Figure 2.
+
+
+
 
 \section{Conclusion}
 
@@ -224,21 +346,7 @@ The DeepCoNN model shows superior performance over standard collaborative filter
 
 
 
-\begin{exhibit}
-\begin{center}
-{\small
-\begin{tabular}{l|ccccccc}
-\hline
-%Category & Experiment Summary  \\ \hline
- & \# Reviews & \# Users & \# Movies & Training\% & Test\% \\
-\hline
-Data & 18,563  & 5033 & 1685 & 90\% & 10\%  \\
-\hline
-\end{tabular}
-}
-\end{center}
-\caption{Amazon Instant Video Dataset Overview}
-\end{exhibit}
+
 
 %Exhibit2
 \begin{exhibit}
@@ -287,8 +395,30 @@ Available as of 11/27/17
 J. McAuley, C. Targett, J. Shi, A. van den Hengel
 SIGIR, 2015
 
-[9] Balakrishnan Anusha, Dixit Kalpit. DeepPlaylist: Using Recurrent Neural Networks to
-Predict Song Similarity. semanticscholars.org 
+[9] Balakrishnan Anusha, Dixit Kalpit. DeepPlaylist: Using Recurrent Neural Networks to Predict Song Similarity. semanticscholars.org 
+
+[10] Global Vectors for Word Representation
+https://nlp.stanford.edu/projects/glove/
+
+[11] Collaborative Recurrent Neural Networks for Dynamic Recommender Systems
+Young-Jun Ko, Lucas Maystre, Matthias Grossglauser, 2016 
+
+[12] A Recurrent Neural Network Based Recommendation System
+David Zhan Liu, Gurbir Singh
+
+[13] A Comparative Study of Word Embeddings for Reading Comprehension
+Bhuwan Dhingra, Hanxiao Liu, Ruslan Salakhutdinov, William W. Cohen
+
+[14] A Beginner's Guide to Recurrent Neural Networks and LSTMS
+https://deeplearning4j.org/lstm.html
+
+[15] Learning phrase representations using RNN encoder-decoder for statistical machine
+translation.
+Kyunghyun Cho, Bart van Merrienboer, C¸ aglar G¨ul¸cehre, Fethi Bougares, Holger Schwenk, and
+Yoshua Bengio., 2014 
+
+[16] A Primer on Neural Network Models for Natural Language Processing
+Yoav Goldberg, draft 2015
 
 
 \end{document}
