@@ -172,11 +172,12 @@ class DeepCoNN():
         self.inputU, self.towerU = self.create_deepconn_tower(u_seq_len)
         self.inputM, self.towerM = self.create_deepconn_tower(m_seq_len)
         self.joined = Concatenate()([self.towerU, self.towerM])
-        self.outNeuron = Dense(1)(self.joined)
+        self.outNeuron = Dense(1, activation="relu")(self.joined)
 
     def create_deepconn_tower(self, max_seq_len):
         input_layer = Input(shape=(max_seq_len, self.embedding_size))
-        tower = GRU(self.rnn_hidden_size, dropout=0.1, activation="tanh")(input_layer)
+        tower = GRU(self.rnn_hidden_size, dropout=0.3,
+                recurrent_dropout=0.3, activation="tanh")(input_layer)
         tower = Dense(self.hidden_size, activation="relu")(tower)
         return input_layer, tower
 
