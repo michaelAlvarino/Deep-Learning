@@ -53,3 +53,19 @@ testing set is entirely independent of the training set.
 1. DeepCoNN-GRU.ipynb - joint model with GRU instead of CNN
 1. DeepCoNN-LSTM.ipynb - joint model with LSTM instead of CNN
 1. Custom Functions.py - utility functions implemented
+
+### Results:
+| model | tensorboard logs saved | training time | test acc |
+|-|-|-|-|
+|CNN||||
+|CNN-100|x|x|x|
+|CNN-Dropout||||
+|CNN-Dropout-100||||
+|LSTM||||
+|LSTM-100||||
+|LSTM-Dropout||||
+|LSTM-Dropout-100||||
+|GRU||||
+|GRU-100||||
+|GRU-Dropout||||
+|GRU-Dropout-100||||
