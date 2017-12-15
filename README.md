@@ -60,7 +60,7 @@ testing set is entirely independent of the training set.
 |CNN|45 min 3 s|0.838151431041|
 |CNN-100|46 min 57 s|0.875454982122|
 |CNN-Dropout|32 min 34 s|0.970476221269|
-|CNN-Dropout-100|46 min 57 s|0.875454982122|
+|CNN-Dropout-100|46 min 57 s|1.03720052967|
 |LSTM|5 hr 0 min 0 s|0.96647225817|
 |LSTM-100|5 hr 8 min 33 s|0.860508471417|
 |LSTM-Dropout|5 hr 1 min 1 s|0.905814871937|
