@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 # preprocessing imports
@@ -12,27 +12,27 @@ from sklearn.model_selection import train_test_split
 from keras.preprocessing.text import text_to_word_sequence
 
 
-# In[ ]:
+# In[2]:
 
 
 # functions we implemented
 from custom_functions import init_embeddings_map, get_embed_and_pad_func
 
 
-# In[ ]:
+# In[3]:
 
 
 emb_size = 50
 embedding_map = init_embeddings_map("glove.6B." + str(emb_size) + "d.txt")
 
 
-# In[ ]:
+# In[4]:
 
 
 raw_data = pd.read_csv("data/unembedded_grouped_cleaned_data.csv")
 
 
-# In[ ]:
+# In[5]:
 
 
 # Train/test split for our model is unique, we need to hold out a
@@ -62,14 +62,14 @@ unique_test_movies = test["asin"].unique()
 train = train.where(np.logical_not(train["asin"].isin(unique_test_movies))).dropna()
 
 
-# In[ ]:
+# In[6]:
 
 
 user_seq_sizes = raw_data.loc[:, "userReviews"].apply(lambda x: x.split()).apply(len)
 item_seq_sizes = raw_data.loc[:, "movieReviews"].apply(lambda x: x.split()).apply(len)
 
 
-# In[ ]:
+# In[7]:
 
 
 u_ptile = 40
@@ -78,7 +78,7 @@ u_seq_len = int(np.percentile(user_seq_sizes, u_ptile))
 i_seq_len = int(np.percentile(item_seq_sizes, i_ptile))
 
 
-# In[ ]:
+# In[8]:
 
 
 embedding_fn = get_embed_and_pad_func(i_seq_len, u_seq_len, np.array([0.0] * emb_size), embedding_map)
@@ -89,7 +89,7 @@ test_embedded = test.apply(embedding_fn, axis=1)
 
 # # DeepCoNN Recommendation Model
 
-# In[ ]:
+# In[9]:
 
 
 # modeling imports
@@ -101,7 +101,7 @@ from keras.layers import Input, Dense
 from keras.layers.merge import Add, Dot, Concatenate
 
 
-# In[ ]:
+# In[10]:
 
 
 class DeepCoNN():
@@ -159,19 +159,19 @@ class DeepCoNN():
         
 
 
-# In[ ]:
+# In[11]:
 
 
 hidden_size = 64
 deepconn = DeepCoNN(emb_size, hidden_size, u_seq_len, i_seq_len)
 
 batch_size = 32
-deepconn.train(train_embedded, batch_size, epochs=20)
+deepconn.train(train_embedded, batch_size, epochs=1)
 
 deepconn.model.save("cnn.h5")
 
 
-# In[1]:
+# In[12]:
 
 
 user_reviews = np.array(list(test_embedded.loc[:, "userReviews"]))
@@ -179,7 +179,17 @@ movie_reviews = np.array(list(test_embedded.loc[:, "movieReviews"]))
 
 test_inputs = [user_reviews, movie_reviews]
 
-np.save("test-data-cnn.npy", test_inputs)
+
+# In[20]:
+
+
+dat = pd.DataFrame(test_inputs)
+dat.to_csv("data/test_data.csv")
+
+
+# In[21]:
+
+
 
 true_rating = np.array(list(test_embedded.loc[:, "overall"])).reshape((-1, 1))
 

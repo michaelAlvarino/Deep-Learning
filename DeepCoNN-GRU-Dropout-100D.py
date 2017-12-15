@@ -171,7 +171,8 @@ movie_reviews = np.array(list(test_embedded.loc[:, "movieReviews"]))
 
 test_inputs = [user_reviews, movie_reviews]
 
-np.save("test-data-gru-dropout-100D.npy", test_inputs)
+dat = pd.DataFrame(test_inputs)
+dat.to_csv("data/test_data.csv")
 
 true_rating = np.array(list(test_embedded.loc[:, "overall"])).reshape((-1, 1))
 
