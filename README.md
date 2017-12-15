@@ -55,17 +55,17 @@ testing set is entirely independent of the training set.
 1. Custom Functions.py - utility functions implemented
 
 ### Results:
-| model | tensorboard logs saved | training time | test acc |
-|-|-|-|-|
-|CNN||||
-|CNN-100|x|x|x|
-|CNN-Dropout||||
-|CNN-Dropout-100||||
-|LSTM||||
-|LSTM-100||||
-|LSTM-Dropout||||
-|LSTM-Dropout-100||||
-|GRU||||
-|GRU-100||||
-|GRU-Dropout||||
-|GRU-Dropout-100||||
+| model | training time | test acc |
+|-|-|-|
+|CNN|45 min 3 s|0.838151431041|
+|CNN-100|46 min 57 s|0.875454982122|
+|CNN-Dropout|32 min 34 s|0.970476221269|
+|CNN-Dropout-100|46 min 57 s|0.875454982122|
+|LSTM|5 hr 0 min 0 s|0.96647225817|
+|LSTM-100|5 hr 8 min 33 s|0.860508471417|
+|LSTM-Dropout|5 hr 1 min 1 s|0.905814871937|
+|LSTM-Dropout-100|5 hr 14 min 40 s|1.11186751019|
+|GRU|4 hr 6 min 15 s|1.04578825772|
+|GRU-100|4 hr 22 min 15 s|0.819229275622|
+|GRU-Dropout|4 hr 29 min 1 s|0.932453658935|
+|GRU-Dropout-100|4 hr 18 min 45 s|0.790328793409|
