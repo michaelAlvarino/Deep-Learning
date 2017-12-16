@@ -60,12 +60,10 @@ testing set is entirely independent of the training set.
 |CNN 100|17 min 45 s               |0.854974748883|
 |CNN Dropout|12 min 1 s            |1.13791756289|
 |CNN Dropout 100|19 min 12 s       |1.12168053715|
-
 |LSTM|1 hr 54 min 30 s             |1.53920110091|
 |LSTM 100|2 hr 3 min 46 s          |1.3328432198|
 |LSTM Dropout|2 hr 4 min 7 s       |1.11078817165|
 |LSTM Dropout 100|2 hr 0 min 20 s  |1.47418677544|
-
 |GRU|1 hr 33 min 27 s              |1.07871009008|
 |GRU 100|1 hr 49 min 52 s          |1.12462539877|
 |GRU Dropout|1 hr 28 min 49 s      |1.21747808816|
